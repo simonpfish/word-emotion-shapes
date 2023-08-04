@@ -1,78 +1,93 @@
 "use client";
 
-import ColorDots from "@/components/ColorDots";
+import ScoreRadar from "@/components/ScoreRadar";
 import { Input } from "@/components/ui/input";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useState, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import clsx from "clsx";
+import { SimilarityScores } from "@/types";
 
 export default function Home() {
   const [text, setText] = useState("");
-  const [colors, setColors] = useState<Record<string, number>>();
+  const [labels, setLabels] = useState("😊,😂,😍,😞,😢,😡,😨,😳,😲,😀");
+  const [scores, setScores] = useState<SimilarityScores>();
   const [isLoading, setIsLoading] = useState(false);
 
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
+  const onSubmit = useCallback(() => {
+    if (isLoading && abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
 
-    debounceTimerRef.current = setTimeout(() => {
-      if (isLoading && abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+    if (!text) {
+      setScores(undefined);
+      return;
+    }
 
-      if (!text) {
-        setColors(undefined);
-        return;
-      }
+    abortControllerRef.current = new AbortController();
 
-      abortControllerRef.current = new AbortController();
-
-      setIsLoading(true);
-      fetch("/api/colors", {
-        method: "POST",
-        body: text,
-        signal: abortControllerRef.current.signal,
+    setIsLoading(true);
+    fetch("/api/scores", {
+      method: "POST",
+      body: JSON.stringify({
+        inputs: text
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+        labels: labels
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean),
+      }),
+      signal: abortControllerRef.current.signal,
+    })
+      .then((res) => res.json())
+      .then((res) => setScores(res))
+      .catch((error) => {
+        if (error.name === "AbortError") {
+          console.log("Fetch request was aborted");
+        } else {
+          throw error;
+        }
       })
-        .then((res) => res.json())
-        .then((res) => setColors(res))
-        .catch((error) => {
-          if (error.name === "AbortError") {
-            console.log("Fetch request was aborted");
-          } else {
-            throw error;
-          }
-        })
-        .finally(() => setIsLoading(false));
-    }, 500);
-
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-
-    // avoid infinite loop with isloading
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text]);
+      .finally(() => setIsLoading(false));
+  }, [isLoading, text, labels]);
 
   return (
     <main className="flex min-h-screen flex-col items-center p-24 justify-center">
-      <Input
-        onChange={(e) => {
-          setText(e.target.value);
-        }}
-        className="w-96"
-        value={text}
-      />
+      <form className="flex flex-grow items-center">
+        {/* <Input
+          onChange={(e) => {
+            setLabels(e.target.value);
+          }}
+          className="w-full"
+          value={labels}
+        /> */}
+        <div
+          className={clsx(
+            "flex flex-row space-x-2",
+            isLoading && "animate-pulse"
+          )}
+        >
+          <Input
+            onChange={(e) => {
+              setText(e.target.value);
+            }}
+            className="w-64"
+            value={text}
+          />
+          <Button type="submit" onClick={onSubmit} disabled={isLoading}>
+            Calculate
+          </Button>
+        </div>
+      </form>
 
-      <div className="flex flex-col items-center mt-8">
-        {colors && <ColorDots colors={colors} />}
+      <div className="flex flex-col items-center h-96 font-mono w-[500px]">
+        <ScoreRadar scores={scores} labels={labels.split(",")} />
       </div>
+
+      <div className="flex flex-grow" />
     </main>
   );
 }
