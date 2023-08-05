@@ -14,7 +14,6 @@ export default function ScoreRadar(props: {
 
   const scores: SimilarityScores = useMemo(() => {
     if (props.scores == null) {
-      // object composed of labels, each with a score of 0
       return {};
     }
 
@@ -31,12 +30,6 @@ export default function ScoreRadar(props: {
       return acc;
     }, {} as SimilarityScores);
 
-    // const allValues = Object.keys(scores).flatMap((key) =>
-    //   Object.keys(scores[key]).map((label) => scores[key][label])
-    // );
-    // const max = Math.max(...allValues);
-    // const min = Math.min(...allValues);
-
     Object.keys(scores).forEach((key) => {
       const values = Object.values(scores[key]);
       const max = Math.max(...values);
@@ -48,8 +41,6 @@ export default function ScoreRadar(props: {
         );
       });
     });
-
-    console.log("data", data);
 
     return Object.keys(data).map((key) => ({
       key,
@@ -82,7 +73,7 @@ export default function ScoreRadar(props: {
           grid: {
             line: {
               stroke: "gray",
-              opacity: 0.5,
+              opacity: 0.1,
             },
           },
         }}
@@ -100,21 +91,11 @@ export default function ScoreRadar(props: {
         gridLabelOffset={16}
         enableDots={false}
         curve="catmullRomClosed"
-        colors={{ scheme: "accent" }}
-        fillOpacity={0.3}
+        colors={["#bae6fd"]}
+        fillOpacity={0.8}
         motionConfig="default"
-        blendMode="multiply"
-        gridLevels={1}
-        layers={[
-          "grid",
-          ({ centerX, centerY }) => (
-            <circle cx={centerX} cy={centerY} r={151} fill="white" />
-          ),
-          "layers",
-          "slices",
-          "dots",
-          "legends",
-        ]}
+        blendMode="normal"
+        gridLevels={3}
         legends={
           !hasSingleTerm
             ? [

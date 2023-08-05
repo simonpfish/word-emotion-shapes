@@ -6,14 +6,35 @@ import { useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import clsx from "clsx";
 import { SimilarityScores } from "@/types";
+import { ShuffleIcon } from "@radix-ui/react-icons";
+import { EMOTIONS } from "@/constants";
 
 export default function Home() {
   const [text, setText] = useState("");
-  const [labels, setLabels] = useState("😊,😂,😍,😞,😢,😡,😨,😳,😲,😀");
   const [scores, setScores] = useState<SimilarityScores>();
   const [isLoading, setIsLoading] = useState(false);
 
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const onShuffle = useCallback(() => {
+    const getRandom = () => {
+      setIsLoading(true);
+
+      fetch("/api/scores", {
+        method: "POST",
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          setScores(res);
+          setText(Object.keys(res).join(", "));
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    };
+
+    getRandom();
+  }, []);
 
   const onSubmit = useCallback(() => {
     if (isLoading && abortControllerRef.current) {
@@ -35,10 +56,6 @@ export default function Home() {
           .split(",")
           .map((s) => s.trim())
           .filter(Boolean),
-        labels: labels
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean),
       }),
       signal: abortControllerRef.current.signal,
     })
@@ -52,18 +69,11 @@ export default function Home() {
         }
       })
       .finally(() => setIsLoading(false));
-  }, [isLoading, text, labels]);
+  }, [isLoading, text]);
 
   return (
     <main className="flex min-h-screen flex-col items-center p-24 justify-center">
       <form className="flex flex-grow items-center">
-        {/* <Input
-          onChange={(e) => {
-            setLabels(e.target.value);
-          }}
-          className="w-full"
-          value={labels}
-        /> */}
         <div
           className={clsx(
             "flex flex-row space-x-2",
@@ -80,11 +90,14 @@ export default function Home() {
           <Button type="submit" onClick={onSubmit} disabled={isLoading}>
             Calculate
           </Button>
+          <Button type="button" onClick={onShuffle} disabled={isLoading}>
+            <ShuffleIcon />
+          </Button>
         </div>
       </form>
 
       <div className="flex flex-col items-center h-96 font-mono w-[500px]">
-        <ScoreRadar scores={scores} labels={labels.split(",")} />
+        <ScoreRadar scores={scores} labels={Object.keys(EMOTIONS)} />
       </div>
 
       <div className="flex flex-grow" />
