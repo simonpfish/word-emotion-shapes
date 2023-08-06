@@ -1,34 +1,25 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Word Shapes
 
-## Getting Started
+This project visualizes the emotional connotation of words using embeddings.
 
-First, run the development server:
+For a given word, we calculate the cosine distance to each emotion (represented by an emoji and description), and use this data to create a Catmull-Rom curve.
+
+- We use [OpenAI Embeddings](https://platform.openai.com/docs/guides/embeddings) to calculate the semantic similarities. You can find the relevant code in [api/scores/route.ts](./src/app/api/scores/route.ts).
+- Visualization and animations are powered by [Nivo](https://nivo.rocks/radar/).
+
+## Developing
+
+This is a [Next.js](https://nextjs.org/) project, bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+
+To start developing, run:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Resources
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+For more information, see:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- [OpenAI API Reference](https://platform.openai.com/docs/api-reference)
+- [Next.js Documentation](https://nextjs.org/docs)
