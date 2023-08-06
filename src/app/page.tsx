@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useState, useCallback, SyntheticEvent } from "react";
 import clsx from "clsx";
 import { ShuffleIcon } from "@radix-ui/react-icons";
 import ScoreRadar from "@/components/ScoreRadar";
@@ -13,19 +13,15 @@ export default function Home() {
   const [text, setText] = useState("");
   const [scores, setScores] = useState<SimilarityScores>();
   const [isLoading, setIsLoading] = useState(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
 
   const fetchScores = useCallback(
     (inputs?: string[]) => {
-      if (isLoading && abortControllerRef.current)
-        abortControllerRef.current.abort();
-      abortControllerRef.current = new AbortController();
+      if (isLoading) return;
 
       setIsLoading(true);
       fetch("/api/scores", {
         method: "POST",
         body: JSON.stringify({ inputs }),
-        signal: abortControllerRef.current.signal,
       })
         .then((res) => res.json())
         .then((res) => {
@@ -42,37 +38,47 @@ export default function Home() {
 
   const onShuffle = useCallback(() => fetchScores(), [fetchScores]);
   const onSubmit = useCallback(
-    () => text && fetchScores([text]),
+    (e: SyntheticEvent) => {
+      e.preventDefault();
+      text && fetchScores([text]);
+    },
     [fetchScores, text]
   );
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-24 justify-center">
-      <form className="flex flex-grow items-center">
+    <main className="flex h-[90vh] flex-col items-center p-8 justify-center">
+      <div className="flex flex-grow" />
+
+      <div className="flex flex-col items-center h-[500px] w-[500px] max-w-[100vw] max-h-[100vh] font-mono p-4">
+        <ScoreRadar scores={scores} isLoading={isLoading} />
+      </div>
+
+      <form className="flex flex-grow items-end md:items-center w-full max-w-md">
         <div
           className={clsx(
-            "flex flex-row space-x-2",
-            isLoading && "animate-pulse"
+            "flex flex-col md:flex-row md:space-x-2 space-y-4 md:space-y-0 w-full"
           )}
         >
           <Input
-            className="w-64"
+            className="flex-grow text-lg h-12"
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
-          <Button type="submit" onClick={onSubmit} disabled={isLoading}>
-            Calculate
-          </Button>
-          <Button type="button" onClick={onShuffle} disabled={isLoading}>
-            <ShuffleIcon />
-          </Button>
+          <div className="flex flex-row space-x-2">
+            <Button
+              type="submit"
+              onClick={onSubmit}
+              disabled={!text}
+              className="text-lg flex-grow h-12"
+            >
+              Calculate
+            </Button>
+            <Button type="button" onClick={onShuffle} className="h-12">
+              <ShuffleIcon className="h-6 w-6" />
+            </Button>
+          </div>
         </div>
       </form>
-      <div className="flex flex-col items-center h-96 font-mono w-[500px]">
-        <ScoreRadar scores={scores} labels={Object.keys(EMOTIONS)} />
-      </div>
-
-      <div className="flex flex-grow" />
     </main>
   );
 }

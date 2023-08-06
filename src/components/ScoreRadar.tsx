@@ -1,91 +1,101 @@
 import { SimilarityScores } from "@/types";
 import { ResponsiveRadar } from "@nivo/radar";
-import clsx from "clsx";
 import * as d3 from "d3";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
+import AutoAdjustingText from "./AutoAdjustingText";
+import { LegendProps } from "@nivo/legends";
+import { EMOTIONS } from "@/constants";
+import clsx from "clsx";
 
-export default function ScoreRadar(props: {
+export default function ScoreRadar({
+  scores,
+  isLoading,
+}: {
   scores?: SimilarityScores;
-  labels: string[];
+  isLoading?: boolean;
 }) {
-  const hasSingleTerm = useMemo(() => {
-    return Object.keys(props.scores ?? {}).length <= 1;
-  }, [props.scores]);
+  const labels = Object.keys(EMOTIONS);
+  const hasSingleTerm = useMemo(
+    () => Object.keys(scores ?? {}).length <= 1,
+    [scores]
+  );
 
-  const scores: SimilarityScores = useMemo(() => {
-    if (props.scores == null) {
-      return {};
-    }
+  const cleanScores = useMemo(() => {
+    // if there are no scores, fill in with 0.33
+    if (!scores)
+      return {
+        score: Object.fromEntries(labels.map((label) => [label, 1 / 3])),
+      };
 
-    if (hasSingleTerm) {
-      return { score: Object.values(props.scores)[0] };
-    }
+    // if there is only one term, use a standard label to animate
+    // curve transitions
+    return hasSingleTerm ? { score: Object.values(scores)[0] } : scores;
+  }, [hasSingleTerm, labels, scores]);
 
-    return props.scores;
-  }, [hasSingleTerm, props.scores]);
-
-  let data = useMemo(() => {
-    const data: SimilarityScores = props.labels.reduce((acc, label) => {
+  const data = useMemo(() => {
+    const initData: SimilarityScores = labels.reduce((acc, label) => {
       acc[label] = {};
       return acc;
     }, {} as SimilarityScores);
 
-    Object.keys(scores).forEach((key) => {
-      const values = Object.values(scores[key]);
-      const max = Math.max(...values);
-      const min = Math.min(...values);
-      Object.keys(scores[key]).forEach((label) => {
-        if (!data[label]) data[label] = {};
-        data[label][key] = d3.scaleLinear().domain([min, max]).range([0.2, 1])(
-          scores[key][label]
-        );
-      });
-    });
+    for (const key of Object.keys(cleanScores)) {
+      const values = Object.values(cleanScores[key]);
+      const [min, max] = [Math.min(...values), Math.max(...values)];
 
-    return Object.keys(data).map((key) => ({
-      key,
-      ...data[key],
-    }));
-  }, [props.labels, scores]);
+      // zoom into the min,max domain
+      const scale = d3.scaleLinear().domain([min, max]).range([0.2, 1]);
+
+      for (const label of Object.keys(cleanScores[key])) {
+        if (!initData[label]) initData[label] = {};
+        initData[label][key] = !scores
+          ? cleanScores[key][label]
+          : scale(cleanScores[key][label]);
+      }
+    }
+
+    // data needs to be in the format that the nivo radar chart expects
+    return Object.keys(initData).map((key) => ({ key, ...initData[key] }));
+  }, [labels, cleanScores, scores]);
+
+  const theme = {
+    fontFamily: "inherit",
+    fontSize: 20,
+    legends: { text: { fontSize: 12 } },
+    tooltip: { container: { fontSize: 12 } },
+    labels: { text: { fontSize: 9, maxWidth: 9 } },
+    grid: { line: { stroke: "gray", opacity: 0.1 } },
+  };
+
+  const margin = !hasSingleTerm
+    ? { top: 80, right: 40, bottom: 40, left: 40 }
+    : { top: 40, right: 40, bottom: 40, left: 40 };
+
+  const legends: LegendProps[] = !hasSingleTerm
+    ? [
+        {
+          anchor: "top-left",
+          direction: "column",
+          translateX: -60,
+          translateY: -80,
+          itemWidth: 80,
+          itemHeight: 20,
+          itemTextColor: "#999",
+          symbolSize: 12,
+          symbolShape: "circle",
+          effects: [{ on: "hover", style: { itemTextColor: "#000" } }],
+        },
+      ]
+    : [];
 
   return (
     <div className="relative h-full w-full" id="radar">
       <ResponsiveRadar
-        theme={{
-          fontFamily: "inherit",
-          fontSize: 20,
-          legends: {
-            text: {
-              fontSize: 12,
-            },
-          },
-          tooltip: {
-            container: {
-              fontSize: 12,
-            },
-          },
-          labels: {
-            text: {
-              fontSize: 9,
-              maxWidth: 9,
-            },
-          },
-          grid: {
-            line: {
-              stroke: "gray",
-              opacity: 0.1,
-            },
-          },
-        }}
+        theme={theme}
         data={data}
-        keys={Object.keys(scores ?? {})}
+        keys={Object.keys(cleanScores)}
         indexBy="key"
         valueFormat=">-.2f"
-        margin={
-          !hasSingleTerm
-            ? { top: 80, right: 60, bottom: 35, left: 60 }
-            : { top: 40, right: 40, bottom: 40, left: 40 }
-        }
+        margin={margin}
         borderColor={{ from: "color" }}
         borderWidth={0}
         gridLabelOffset={16}
@@ -96,73 +106,20 @@ export default function ScoreRadar(props: {
         motionConfig="default"
         blendMode="normal"
         gridLevels={3}
-        legends={
-          !hasSingleTerm
-            ? [
-                {
-                  anchor: "top-left",
-                  direction: "column",
-                  translateX: -60,
-                  translateY: -80,
-                  itemWidth: 80,
-                  itemHeight: 20,
-                  itemTextColor: "#999",
-                  symbolSize: 12,
-                  symbolShape: "circle",
-                  effects: [
-                    {
-                      on: "hover",
-                      style: {
-                        itemTextColor: "#000",
-                      },
-                    },
-                  ],
-                },
-              ]
-            : []
-        }
+        maxValue={1}
+        legends={legends}
       />
-      {hasSingleTerm && props.scores && (
-        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 -mt-1.5 font-bold font-serif text-7xl text-gray-400 max-w-[270px]">
-          <AutoAdjustingText>{Object.keys(props.scores)[0]}</AutoAdjustingText>
+      {hasSingleTerm && scores && (
+        <div
+          className={clsx(
+            "absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 -mt-1.5",
+            "font-bold font-serif text-7xl text-gray-400 max-w-[250px] transition-opacity",
+            isLoading && "animate-pulse"
+          )}
+        >
+          <AutoAdjustingText>{Object.keys(scores)[0]}</AutoAdjustingText>
         </div>
       )}
     </div>
   );
 }
-
-const AutoAdjustingText = ({ children }: { children: string }) => {
-  const textRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!textRef.current) return;
-
-    const initialFontSize = 100;
-    let fontSize = initialFontSize;
-
-    textRef.current.style.fontSize = fontSize + "px";
-    textRef.current.style.whiteSpace = "nowrap";
-
-    while (
-      textRef.current.scrollWidth > textRef.current.offsetWidth &&
-      fontSize > 30
-    ) {
-      fontSize--;
-      textRef.current.style.fontSize = fontSize + "px";
-    }
-
-    if (textRef.current.scrollWidth > textRef.current.offsetWidth) {
-      textRef.current.style.whiteSpace = "normal";
-    }
-  }, [children]);
-
-  return (
-    <div
-      ref={textRef}
-      className={clsx("w-full text-center")}
-      style={{ fontSize: 100 }}
-    >
-      {children}
-    </div>
-  );
-};

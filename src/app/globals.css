@@ -74,5 +74,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    
+    /* disable scrolling and zooming on mobile (more app-like) */
+    touch-action: none;
   }
 }
