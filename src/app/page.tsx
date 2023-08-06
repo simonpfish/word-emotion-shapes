@@ -52,14 +52,14 @@ export default function Home() {
         <ScoreRadar scores={scores} isLoading={isLoading} />
       </div>
 
-      <form className="flex flex-grow items-end md:items-center w-full max-w-md">
+      <form className="flex flex-grow items-end w-full max-w-md">
         <div
           className={clsx(
             "flex flex-col md:flex-row md:space-x-2 space-y-4 md:space-y-0 w-full"
           )}
         >
           <Input
-            className="flex-grow text-lg h-12"
+            className="flex-grow text-lg h-12 md:text-base md:h-10"
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
@@ -68,11 +68,11 @@ export default function Home() {
               type="submit"
               onClick={onSubmit}
               disabled={!text}
-              className="text-lg flex-grow h-12"
+              className="text-lg flex-grow h-12 md:text-base md:h-10"
             >
               Calculate
             </Button>
-            <Button type="button" onClick={onShuffle} className="h-12">
+            <Button type="button" onClick={onShuffle} className="h-12 md:h-10">
               <ShuffleIcon className="h-6 w-6" />
             </Button>
           </div>

@@ -10,21 +10,25 @@ const configuration = new Configuration({
 
 const openai = new OpenAIApi(configuration);
 
-const emotionEmbeddings = await openai.createEmbedding({
-  model: "text-embedding-ada-002",
-  input: Object.values(EMOTIONS),
-});
+async function main() {
+  const emotionEmbeddings = await openai.createEmbedding({
+    model: "text-embedding-ada-002",
+    input: Object.values(EMOTIONS),
+  });
 
-const data = emotionEmbeddings.data.data.reduce((acc, d, i) => {
-  const emotion = Object.keys(EMOTIONS)[i];
-  acc[emotion] = d.embedding;
-  return acc;
-}, {} as Record<string, number[]>);
+  const data = emotionEmbeddings.data.data.reduce((acc, d, i) => {
+    const emotion = Object.keys(EMOTIONS)[i];
+    acc[emotion] = d.embedding;
+    return acc;
+  }, {} as Record<string, number[]>);
 
-fs.writeFile(FILE_NAME, JSON.stringify(data), (err) => {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log(FILE_NAME, "has been written successfully");
-  }
-});
+  fs.writeFile(FILE_NAME, JSON.stringify(data), (err) => {
+    if (err) {
+      console.error(err);
+    } else {
+      console.log(FILE_NAME, "has been written successfully");
+    }
+  });
+}
+
+main();
