@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SimilarityScores } from "@/types";
 import { Textarea } from "@/components/ui/textarea";
-import Signature from "@/components/Signature";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -51,7 +51,7 @@ export default function Home() {
   );
 
   return (
-    <main className="flex h-[90vh] md:h-[95vh] flex-col items-center p-8 justify-center">
+    <main className="flex h-[90vh] md:h-[95vh] flex-col items-center px-8 justify-center">
       <div className="flex flex-grow" />
 
       <div className="flex flex-col items-center h-[500px] w-[500px] max-w-[100vw] max-h-[100vh] font-mono p-4">
@@ -87,7 +87,7 @@ export default function Home() {
         </div>
       </form>
 
-      <Signature />
+      <Footer />
     </main>
   );
 }
