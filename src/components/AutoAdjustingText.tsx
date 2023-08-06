@@ -21,7 +21,7 @@ export default function AutoAdjustingText({
 
     while (
       textRef.current.scrollWidth > textRef.current.offsetWidth &&
-      fontSize > 30
+      fontSize > 50
     ) {
       fontSize--;
       textRef.current.style.fontSize = fontSize + "px";

@@ -113,7 +113,7 @@ export default function ScoreRadar({
         <div
           className={clsx(
             "absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 -mt-1.5",
-            "font-bold font-serif text-7xl text-gray-400 max-w-[250px] transition-opacity",
+            "font-bold font-serif text-7xl text-gray-400 w-[calc(100%-120px)] transition-opacity",
             isLoading && "animate-pulse"
           )}
         >
