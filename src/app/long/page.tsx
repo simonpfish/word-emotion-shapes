@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SimilarityScores } from "@/types";
 import { Textarea } from "@/components/ui/textarea";
+import Signature from "@/components/Signature";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -85,6 +86,8 @@ export default function Home() {
           </div>
         </div>
       </form>
+
+      <Signature />
     </main>
   );
 }

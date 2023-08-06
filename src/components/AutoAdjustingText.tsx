@@ -19,16 +19,13 @@ export default function AutoAdjustingText({
     textRef.current.style.fontSize = fontSize + "px";
     textRef.current.style.whiteSpace = "nowrap";
 
-    while (
-      textRef.current.scrollWidth > textRef.current.offsetWidth &&
-      fontSize > 50
-    ) {
+    while (textRef.current.scrollWidth > textRef.current.offsetWidth) {
       fontSize--;
       textRef.current.style.fontSize = fontSize + "px";
-    }
 
-    if (textRef.current.scrollWidth > textRef.current.offsetWidth) {
-      textRef.current.style.whiteSpace = "normal";
+      if (fontSize > 50) {
+        textRef.current.style.whiteSpace = "normal";
+      }
     }
   }, [children]);
 

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useCallback, SyntheticEvent } from "react";
+import { useState, useCallback, SyntheticEvent, useEffect } from "react";
 import clsx from "clsx";
-import { ShuffleIcon } from "@radix-ui/react-icons";
+import { GitHubLogoIcon, ShuffleIcon } from "@radix-ui/react-icons";
 import ScoreRadar from "@/components/ScoreRadar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SimilarityScores } from "@/types";
+import Signature from "@/components/Signature";
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -35,6 +36,12 @@ export default function Home() {
     [isLoading]
   );
 
+  useEffect(() => {
+    // fetch on first load
+    fetchScores();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const onShuffle = useCallback(() => fetchScores(), [fetchScores]);
   const onSubmit = useCallback(
     (e: SyntheticEvent) => {
@@ -47,11 +54,9 @@ export default function Home() {
   return (
     <main className="flex h-[90vh] flex-col items-center p-8 justify-center">
       <div className="flex flex-grow" />
-
       <div className="flex flex-col items-center h-[500px] w-[500px] max-w-[100vw] max-h-[100vh] font-mono p-4">
         <ScoreRadar scores={scores} isLoading={isLoading} />
       </div>
-
       <form className="flex flex-grow items-end w-full max-w-md">
         <div
           className={clsx(
@@ -78,6 +83,7 @@ export default function Home() {
           </div>
         </div>
       </form>
+      <Signature />
     </main>
   );
 }
