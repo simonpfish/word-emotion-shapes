@@ -16,6 +16,7 @@
     "@types/node": "20.4.4",
     "@types/react": "18.2.16",
     "@types/react-dom": "18.2.7",
+    "@vercel/analytics": "^1.0.1",
     "@visx/visx": "^3.3.0",
     "autoprefixer": "10.4.14",
     "class-variance-authority": "^0.7.0",
