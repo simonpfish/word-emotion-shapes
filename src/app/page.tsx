@@ -6,7 +6,6 @@ import { ShuffleIcon } from "@radix-ui/react-icons";
 import ScoreRadar from "@/components/ScoreRadar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EMOTIONS } from "@/constants";
 import { SimilarityScores } from "@/types";
 
 export default function Home() {
