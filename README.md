@@ -1,4 +1,4 @@
-# Word Shapes
+# Word Emotion Shapes
 
 This project visualizes the emotional connotation of words using embeddings.
 
